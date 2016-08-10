@@ -41,44 +41,56 @@ namespace V5SagaPersisterPerformanceTests
                 var h = new ManualResetEvent(false);
                 var t = new Thread(() =>
                 {
-                    while(count < howMany)
+                    try
                     {
-                        using(var session = store.OpenSession())
+                        while(count < howMany)
                         {
-                            var data = new SagaData()
+                            using(var session = store.OpenSession())
                             {
-                                Id = Guid.NewGuid()
-                            };
+                                var data = new SagaData()
+                                {
+                                    Id = Guid.NewGuid()
+                                };
 
-                            session.Store(data);
+                                session.Store(data);
 
-                            var docId = session.Advanced.DocumentStore.Conventions.FindFullDocumentKeyFromNonStringIdentifier(data.Id, data.GetType(), false);
-                            var uniqueDocId = UniqueDocIdKey + "/" + docId;
+                                var docId = session.Advanced.DocumentStore.Conventions.FindFullDocumentKeyFromNonStringIdentifier(data.Id, data.GetType(), false);
+                                var uniqueDocId = UniqueDocIdKey + "/" + docId;
 
-                            session.Store(new
-                            {
-                                Id = uniqueDocId,
-                                SagaId = data.Id,
-                                SagaDocId = docId
-                            }, id: uniqueDocId, etag: Etag.Empty);
+                                session.Store(new
+                                {
+                                    Id = uniqueDocId,
+                                    SagaId = data.Id,
+                                    SagaDocId = docId
+                                }, id: uniqueDocId, etag: Etag.Empty);
 
-                            var metadata = session.Advanced.GetMetadataFor(data);
-                            metadata[ UniqueDocIdKey ] = uniqueDocId;
+                                var metadata = session.Advanced.GetMetadataFor(data);
+                                metadata[ UniqueDocIdKey ] = uniqueDocId;
 
-                            session.SaveChanges();
+                                session.SaveChanges();
+                            }
+
+                            Interlocked.Increment(ref count);
                         }
 
-                        Interlocked.Increment(ref count);
                     }
-
-                    h.Set();
+                    finally
+                    {
+                        h.Set();
+                    }
                 });
                 pending.Add(h);
 
                 t.Start();
             }
 
-            WaitHandle.WaitAll(pending.ToArray());
+            var timeout = TimeSpan.FromSeconds(2);
+            if(howMany > 50)
+            {
+                timeout = TimeSpan.FromSeconds(howMany / 50);
+            }
+
+            WaitHandle.WaitAll(pending.ToArray(), timeout);
 
             sw.Stop();
 

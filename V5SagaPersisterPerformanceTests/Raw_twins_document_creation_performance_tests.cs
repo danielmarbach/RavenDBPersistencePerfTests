@@ -39,34 +39,46 @@ namespace V5SagaPersisterPerformanceTests
                 var h = new ManualResetEvent(false);
                 var t = new Thread(() =>
                 {
-                    while(count < howMany)
+                    try
                     {
-                        using(var session = store.OpenSession())
+                        while(count < howMany)
                         {
-                            session.Store(new SagaData()
+                            using(var session = store.OpenSession())
                             {
-                                Id = Guid.NewGuid()
-                            });
+                                session.Store(new SagaData()
+                                {
+                                    Id = Guid.NewGuid()
+                                });
 
-                            session.Store(new SagaData()
-                            {
-                                Id = Guid.NewGuid()
-                            });
+                                session.Store(new SagaData()
+                                {
+                                    Id = Guid.NewGuid()
+                                });
 
-                            session.SaveChanges();
+                                session.SaveChanges();
+                            }
+
+                            Interlocked.Increment(ref count);
                         }
 
-                        Interlocked.Increment(ref count);
                     }
-
-                    h.Set();
+                    finally
+                    {
+                        h.Set();
+                    }
                 });
                 pending.Add(h);
 
                 t.Start();
             }
 
-            WaitHandle.WaitAll(pending.ToArray());
+            var timeout = TimeSpan.FromSeconds(2);
+            if(howMany > 50)
+            {
+                timeout = TimeSpan.FromSeconds(howMany / 50);
+            }
+
+            WaitHandle.WaitAll(pending.ToArray(), timeout);
 
             sw.Stop();
 

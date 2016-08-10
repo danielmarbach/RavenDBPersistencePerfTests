@@ -27,7 +27,7 @@ namespace V6SagaPersisterPerformanceTests
         [TestCase(50000, 32)]
         [TestCase(200000)]
         [TestCase(200000, 10)]
-        public async Task create_saga(int howManySagas, int parallelization = 1)
+        public async Task create_saga(int howMany, int parallelization = 1)
         {
             var store = new DocumentStore()
             {
@@ -48,7 +48,7 @@ namespace V6SagaPersisterPerformanceTests
             {
                 var t = Task.Run(async () =>
                 {
-                    while(count < howManySagas)
+                    while(count < howMany)
                     {
                         var data = new SagaData()
                         {

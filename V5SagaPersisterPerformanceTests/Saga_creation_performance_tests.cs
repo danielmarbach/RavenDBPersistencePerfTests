@@ -23,7 +23,7 @@ namespace V5SagaPersisterPerformanceTests
         [TestCase(50000, 32)]
         [TestCase(200000)]
         [TestCase(200000, 10)]
-        public void create_saga(int howManySagas, int parallelization = 1)
+        public void create_saga(int howMany, int parallelization = 1)
         {
             var store = new DocumentStore()
             {
@@ -47,29 +47,40 @@ namespace V5SagaPersisterPerformanceTests
                     var sagaPersisterType = Type.GetType("NServiceBus.SagaPersisters.RavenDB.SagaPersister, NServiceBus.RavenDB");
                     var sagaPersister = (ISagaPersister)Activator.CreateInstance(sagaPersisterType, new object[] { sessionProvider });
 
-
-                    while(count < howManySagas)
+                    try
                     {
-                        var data = new SagaData()
+                        while(count < howMany)
                         {
-                            Id = Guid.NewGuid()
-                        };
+                            var data = new SagaData()
+                            {
+                                Id = Guid.NewGuid()
+                            };
 
-                        sagaPersister.Save(data);
-                        sessionProvider.SaveChanges();
-                        sessionProvider.ReleaseSession();
+                            sagaPersister.Save(data);
+                            sessionProvider.SaveChanges();
+                            sessionProvider.ReleaseSession();
 
-                        Interlocked.Increment(ref count);
+                            Interlocked.Increment(ref count);
+                        }
+
                     }
-
-                    h.Set();
+                    finally
+                    {
+                        h.Set();
+                    }
                 });
                 pending.Add(h);
 
                 t.Start();
             }
 
-            WaitHandle.WaitAll(pending.ToArray());
+            var timeout = TimeSpan.FromSeconds(2);
+            if(howMany > 50)
+            {
+                timeout = TimeSpan.FromSeconds(howMany / 50);
+            }
+
+            WaitHandle.WaitAll(pending.ToArray(), timeout);
 
             sw.Stop();
 
