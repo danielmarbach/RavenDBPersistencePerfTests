@@ -13,6 +13,7 @@ using System.Reflection;
 using NServiceBus.Persistence;
 using System.IO;
 using System.Threading;
+using System.Configuration;
 
 namespace V6SagaPersisterPerformanceTests
 {
@@ -31,13 +32,18 @@ namespace V6SagaPersisterPerformanceTests
         {
             var store = new DocumentStore()
             {
-                Url = System.Configuration.ConfigurationManager.AppSettings[ "RavenDB/Url" ],
+                Url = ConfigurationManager.AppSettings[ "RavenDB/Url" ],
                 DefaultDatabase = "V6SagaPersisterPerfTests",
                 TransactionRecoveryStorage = new LocalDirectoryTransactionRecoveryStorage(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dtc-storage"))
             };
-            store.Initialize();
 
-            store.Conventions.FailoverBehavior = Raven.Abstractions.Replication.FailoverBehavior.FailImmediately;
+            bool disableReplicationInformer;
+            if(bool.TryParse(ConfigurationManager.AppSettings[ "RavenDB/ReplicationInformer/Disable" ], out disableReplicationInformer) && disableReplicationInformer)
+            {
+                store.Conventions.FailoverBehavior = Raven.Abstractions.Replication.FailoverBehavior.FailImmediately;
+            }
+
+            store.Initialize();
 
             var sagaPersisterType = Type.GetType("NServiceBus.Persistence.RavenDB.SagaPersister, NServiceBus.RavenDB");
             var sagaPersister = (ISagaPersister)Activator.CreateInstance(sagaPersisterType);

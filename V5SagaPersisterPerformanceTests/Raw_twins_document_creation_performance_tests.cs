@@ -10,6 +10,7 @@ using System.IO;
 using System.Threading;
 using System.Collections.Generic;
 using Raven.Abstractions.Data;
+using System.Configuration;
 
 namespace V5SagaPersisterPerformanceTests
 {
@@ -28,9 +29,14 @@ namespace V5SagaPersisterPerformanceTests
                 DefaultDatabase = "V5RawDocPerfTests",
                 TransactionRecoveryStorage = new LocalDirectoryTransactionRecoveryStorage(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dtc-storage"))
             };
-            store.Initialize();
 
-            store.Conventions.FailoverBehavior = Raven.Abstractions.Replication.FailoverBehavior.FailImmediately;
+            bool disableReplicationInformer;
+            if(bool.TryParse(ConfigurationManager.AppSettings[ "RavenDB/ReplicationInformer/Disable" ], out disableReplicationInformer) && disableReplicationInformer)
+            {
+                store.Conventions.FailoverBehavior = Raven.Abstractions.Replication.FailoverBehavior.FailImmediately;
+            }
+
+            store.Initialize();
 
             var count = 0;
             var sw = Stopwatch.StartNew();
