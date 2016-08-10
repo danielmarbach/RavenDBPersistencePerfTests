@@ -31,7 +31,7 @@ namespace V6SagaPersisterPerformanceTests
         {
             var store = new DocumentStore()
             {
-                Url = "http://localhost:8083",
+                Url = System.Configuration.ConfigurationManager.AppSettings[ "RavenDB/Url" ],
                 DefaultDatabase = "V6SagaPersisterPerfTests",
                 TransactionRecoveryStorage = new LocalDirectoryTransactionRecoveryStorage(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dtc-storage"))
             };
