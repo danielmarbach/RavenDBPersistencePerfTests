@@ -69,6 +69,9 @@ namespace V6SagaPersisterPerformanceTests
                         Interlocked.Increment(ref count);
                     }
                 });
+
+                await t.ConfigureAwait(false);
+
                 pending.Add(t);
             }
 
