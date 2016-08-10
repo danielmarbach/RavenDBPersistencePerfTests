@@ -27,7 +27,7 @@ namespace V6SagaPersisterPerformanceTests
         [TestCase(50000, 32)]
         [TestCase(200000)]
         [TestCase(200000, 10)]
-        public async Task create_saga(int howMany, int parallelization = 1)
+        public async Task create_saga(int howMany, int parallelization = 1, bool traceOutput = true)
         {
             var store = new DocumentStore()
             {
@@ -36,6 +36,8 @@ namespace V6SagaPersisterPerformanceTests
                 TransactionRecoveryStorage = new LocalDirectoryTransactionRecoveryStorage(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dtc-storage"))
             };
             store.Initialize();
+
+            store.Conventions.FailoverBehavior = Raven.Abstractions.Replication.FailoverBehavior.FailImmediately;
 
             var sagaPersisterType = Type.GetType("NServiceBus.Persistence.RavenDB.SagaPersister, NServiceBus.RavenDB");
             var sagaPersister = (ISagaPersister)Activator.CreateInstance(sagaPersisterType);
@@ -73,9 +75,12 @@ namespace V6SagaPersisterPerformanceTests
 
             sw.Stop();
 
-            TestContext.WriteLine($"Inserted: {count}");
-            TestContext.WriteLine($"Elapsed (ms): {sw.ElapsedMilliseconds}");
-            TestContext.WriteLine($"Elapsed: {sw.Elapsed}");
+            if(traceOutput)
+            {
+                TestContext.WriteLine($"Inserted: {count}");
+                TestContext.WriteLine($"Elapsed (ms): {sw.ElapsedMilliseconds}");
+                TestContext.WriteLine($"Elapsed: {sw.Elapsed}");
+            }
         }
     }
 }

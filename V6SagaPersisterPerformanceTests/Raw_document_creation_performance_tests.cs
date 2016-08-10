@@ -33,6 +33,8 @@ namespace V6SagaPersisterPerformanceTests
             };
             store.Initialize();
 
+            store.Conventions.FailoverBehavior = Raven.Abstractions.Replication.FailoverBehavior.FailImmediately;
+
             var count = 0;
             var sw = Stopwatch.StartNew();
 

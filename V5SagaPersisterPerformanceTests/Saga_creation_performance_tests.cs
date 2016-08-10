@@ -23,7 +23,7 @@ namespace V5SagaPersisterPerformanceTests
         [TestCase(50000, 32)]
         [TestCase(200000)]
         [TestCase(200000, 10)]
-        public void create_saga(int howMany, int parallelization = 1)
+        public void create_saga(int howMany, int parallelization = 1, bool traceOutput = true)
         {
             var store = new DocumentStore()
             {
@@ -33,14 +33,15 @@ namespace V5SagaPersisterPerformanceTests
             };
             store.Initialize();
 
+            store.Conventions.FailoverBehavior = Raven.Abstractions.Replication.FailoverBehavior.FailImmediately;
+
             var count = 0;
             var sw = Stopwatch.StartNew();
 
             var pending = new List<WaitHandle>();
             for(int i = 0; i < parallelization; i++)
             {
-                var h = new ManualResetEvent(false);
-                var t = new Thread(() =>
+                var t = new Thread(obj =>
                 {
                     var sessionProvider = new RavenSessionFactory(store);
 
@@ -66,12 +67,14 @@ namespace V5SagaPersisterPerformanceTests
                     }
                     finally
                     {
-                        h.Set();
+                        ((ManualResetEvent)obj).Set();
                     }
                 });
-                pending.Add(h);
 
-                t.Start();
+                var wh = new ManualResetEvent(false);
+                pending.Add(wh);
+
+                t.Start( wh );
             }
 
             var timeout = TimeSpan.FromSeconds(2);
@@ -84,9 +87,12 @@ namespace V5SagaPersisterPerformanceTests
 
             sw.Stop();
 
-            TestContext.WriteLine($"Inserted: {count}");
-            TestContext.WriteLine($"Elapsed (ms): {sw.ElapsedMilliseconds}");
-            TestContext.WriteLine($"Elapsed: {sw.Elapsed}");
+            if(traceOutput)
+            {
+                TestContext.WriteLine($"Inserted: {count}");
+                TestContext.WriteLine($"Elapsed (ms): {sw.ElapsedMilliseconds}");
+                TestContext.WriteLine($"Elapsed: {sw.Elapsed}");
+            }
         }
     }
 }

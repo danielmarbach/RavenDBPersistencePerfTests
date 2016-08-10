@@ -29,14 +29,15 @@ namespace V5SagaPersisterPerformanceTests
             };
             store.Initialize();
 
+            store.Conventions.FailoverBehavior = Raven.Abstractions.Replication.FailoverBehavior.FailImmediately;
+
             var count = 0;
             var sw = Stopwatch.StartNew();
 
             var pending = new List<WaitHandle>();
             for(int i = 0; i < parallelization; i++)
             {
-                var h = new ManualResetEvent(false);
-                var t = new Thread(() =>
+                var t = new Thread(obj =>
                 {
                     try
                     {
@@ -56,12 +57,14 @@ namespace V5SagaPersisterPerformanceTests
                     }
                     finally
                     {
-                        h.Set();
+                        ((ManualResetEvent)obj).Set();
                     }
                 });
-                pending.Add(h);
 
-                t.Start();
+                var wh = new ManualResetEvent(false);
+                pending.Add(wh);
+
+                t.Start(wh);
             }
 
             var timeout = TimeSpan.FromSeconds(2);
