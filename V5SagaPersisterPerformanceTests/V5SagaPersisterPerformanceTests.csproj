@@ -75,6 +75,7 @@
     <Compile Include="Raw_document_creation_performance_tests.cs" />
     <Compile Include="Saga_creation_performance_tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TypeExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

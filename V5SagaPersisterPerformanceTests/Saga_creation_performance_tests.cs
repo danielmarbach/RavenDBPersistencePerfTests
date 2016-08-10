@@ -51,8 +51,7 @@ namespace V5SagaPersisterPerformanceTests
                 {
                     var sessionProvider = new RavenSessionFactory(store);
 
-                    var sagaPersisterType = Type.GetType("NServiceBus.SagaPersisters.RavenDB.SagaPersister, NServiceBus.RavenDB");
-                    var sagaPersister = (ISagaPersister)Activator.CreateInstance(sagaPersisterType, new object[] { sessionProvider });
+                    var sagaPersister = (ISagaPersister)Type.GetType("NServiceBus.SagaPersisters.RavenDB.SagaPersister, NServiceBus.RavenDB").GetInstance(sessionProvider);
 
                     try
                     {
