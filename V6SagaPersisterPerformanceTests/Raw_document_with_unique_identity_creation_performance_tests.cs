@@ -83,7 +83,7 @@ namespace V6SagaPersisterPerformanceTests
                     }
                 });
 
-                await t.ConfigureAwait(false);
+                //await t.ConfigureAwait(false);
 
                 pending.Add(t);
             }
