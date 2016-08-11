@@ -64,9 +64,10 @@ namespace V6SagaPersisterPerformanceTests
                             await session.StoreAsync(data).ConfigureAwait(false);
 
                             var docId = session.Advanced.DocumentStore.Conventions.FindFullDocumentKeyFromNonStringIdentifier(data.Id, data.GetType(), false);
-                            var uniqueDocId = UniqueDocIdKey + "/" + docId;
+                            //var uniqueDocId = UniqueDocIdKey + "/" + docId;
+                            var uniqueDocId = UniqueDocument.FormatId( data.GetType(), "Id", data.Id);
 
-                            await session.StoreAsync(new 
+                            await session.StoreAsync( new SagaUniqueDocument() 
                             {
                                 Id = uniqueDocId,
                                 SagaId = data.Id,

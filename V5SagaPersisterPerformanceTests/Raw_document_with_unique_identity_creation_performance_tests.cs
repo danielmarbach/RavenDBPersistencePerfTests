@@ -62,9 +62,10 @@ namespace V5SagaPersisterPerformanceTests
                                 session.Store(data);
 
                                 var docId = session.Advanced.DocumentStore.Conventions.FindFullDocumentKeyFromNonStringIdentifier(data.Id, data.GetType(), false);
-                                var uniqueDocId = UniqueDocIdKey + "/" + docId;
+                                //var uniqueDocId = UniqueDocIdKey + "/" + docId;
+                                var uniqueDocId = UniqueDocument.FormatId(data.GetType(), "Id", data.Id);
 
-                                session.Store(new
+                                session.Store(new SagaUniqueDocument()
                                 {
                                     Id = uniqueDocId,
                                     SagaId = data.Id,

@@ -68,6 +68,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="UniqueDocument.cs" />
     <Compile Include="RavenSessionFactory.cs" />
     <Compile Include="Raw_twins_document_creation_performance_tests.cs" />
     <Compile Include="Raw_document_with_unique_identity_creation_performance_tests.cs" />

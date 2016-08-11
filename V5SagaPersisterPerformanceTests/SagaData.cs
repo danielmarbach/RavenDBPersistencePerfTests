@@ -12,4 +12,11 @@ namespace V5SagaPersisterPerformanceTests
             set;
         }
     }
+
+    class SagaUniqueDocument
+    {
+        public string Id { get; internal set; }
+        public string SagaDocId { get; internal set; }
+        public Guid SagaId { get; internal set; }
+    }
 }
