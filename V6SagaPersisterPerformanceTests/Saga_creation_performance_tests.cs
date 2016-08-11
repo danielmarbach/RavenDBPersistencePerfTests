@@ -45,8 +45,8 @@ namespace V6SagaPersisterPerformanceTests
 
             store.Initialize();
 
-            var sagaPersisterType = Type.GetType("NServiceBus.Persistence.RavenDB.SagaPersister, NServiceBus.RavenDB");
-            var sagaPersister = (ISagaPersister)Activator.CreateInstance(sagaPersisterType);
+            //var sagaPersister = (ISagaPersister)Type.GetType("NServiceBus.Persistence.RavenDB.SagaPersister, NServiceBus.RavenDB").GetInstance();
+            var sagaPersister = (ISagaPersister)Activator.CreateInstance(Type.GetType("NServiceBus.Persistence.RavenDB.SagaPersister, NServiceBus.RavenDB"));
 
             var count = 0;
             var sw = Stopwatch.StartNew();
@@ -65,7 +65,8 @@ namespace V6SagaPersisterPerformanceTests
 
                         using(var session = store.OpenAsyncSession())
                         {
-                            var storageSession = (SynchronizedStorageSession)Type.GetType("NServiceBus.Persistence.RavenDB.RavenDBSynchronizedStorageSession, NServiceBus.RavenDB").GetInstance(session, false);
+                            var storageSession = (SynchronizedStorageSession)Activator.CreateInstance( Type.GetType("NServiceBus.Persistence.RavenDB.RavenDBSynchronizedStorageSession, NServiceBus.RavenDB"), new object[] { session, false });
+                            //var storageSession = (SynchronizedStorageSession)Type.GetType("NServiceBus.Persistence.RavenDB.RavenDBSynchronizedStorageSession, NServiceBus.RavenDB").GetInstance(session, false);
 
                             await sagaPersister.Save(data, new SagaCorrelationProperty("Id", data.Id), storageSession, new NServiceBus.Extensibility.ContextBag()).ConfigureAwait(false);
                             await session.SaveChangesAsync().ConfigureAwait(false);
@@ -75,7 +76,7 @@ namespace V6SagaPersisterPerformanceTests
                     }
                 });
 
-                await t.ConfigureAwait(false);
+                //await t.ConfigureAwait(false);
 
                 pending.Add(t);
             }

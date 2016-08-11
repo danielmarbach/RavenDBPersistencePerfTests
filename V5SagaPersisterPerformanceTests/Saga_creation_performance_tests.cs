@@ -51,7 +51,8 @@ namespace V5SagaPersisterPerformanceTests
                 {
                     var sessionProvider = new RavenSessionFactory(store);
 
-                    var sagaPersister = (ISagaPersister)Type.GetType("NServiceBus.SagaPersisters.RavenDB.SagaPersister, NServiceBus.RavenDB").GetInstance(sessionProvider);
+                    var sagaPersister = (ISagaPersister)Activator.CreateInstance(Type.GetType("NServiceBus.SagaPersisters.RavenDB.SagaPersister, NServiceBus.RavenDB"), new object[] { sessionProvider });
+                    //var sagaPersister = (ISagaPersister)Type.GetType("NServiceBus.SagaPersisters.RavenDB.SagaPersister, NServiceBus.RavenDB").GetInstance(sessionProvider);
 
                     try
                     {
@@ -79,7 +80,7 @@ namespace V5SagaPersisterPerformanceTests
                 var wh = new ManualResetEvent(false);
                 pending.Add(wh);
 
-                t.Start( wh );
+                t.Start(wh);
             }
 
             var timeout = TimeSpan.FromSeconds(2);
